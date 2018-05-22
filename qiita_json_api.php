@@ -28,7 +28,7 @@ function qiita_json_api($data){
 //        $data['contents'][$i]['image_monthly_upload_limit'] = $API['image_monthly_upload_limit'];
 //        $data['contents'][$i]['image_monthly_upload_remaining'] = $API['image_monthly_upload_remaining'];
 //        $data['contents'][$i]['team_only'] = $API['team_only'];
-//        $data['contents'][$i]['body'] = $API['body'];
+        $data['contents'][$i]['body'] = $API['body'];
         $data['contents'][$i]['private'] = $API['private'];
         $data['contents'][$i]['page_views_count'] = $API['page_views_count'];
         $data['contents'][$i]['likes_count'] = $API['likes_count'];

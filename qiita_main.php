@@ -14,16 +14,25 @@ $data = extract_qiita_feed("feed.atom");
 $data2 = qiita_json_api($data);
 //print_r($data2);
 
-$db = new Database();
+try{
+    $db = new Database();
+    $db->pdo->beginTransaction();
 
-//$res = $db->tags($data2);
-//print_r($res);
+    $db->insert_author($data2);
+    $db->insert_article($data2);
+    $db->insert_rss_history($data2);    
+    $res = $db->tags($data2);
+    print_r($res);
 
+    $db->pdo->commit();
 
-$db->insert_author($data2);
-//$db->insert_article($data2);
-//$db->insert_rss_history($data2);
+}catch(PDOException $e){
+    $db->pdo->rollBack();
+    echo $e->getMessage();
+    die();
+}
 
+$db = null;
 
 
 

@@ -9,7 +9,7 @@ class Database
     private $user = 'root';
     private $pass = 'systemsoftkensyu2018';
     private $databaseName = 'qiita_kadai';
-    private $pdo = null; // PDOのインスタンスを保持する
+    public $pdo = null; // PDOのインスタンスを保持する
 
     /**
      * コンストラクタ
@@ -109,31 +109,50 @@ class Database
 function insert_article($data2){
     $db = new Database();
     $sql = "INSERT INTO articles_tbl(post_id, url, title,
-                                    permanent_id, likes_count,
-                                    created_at, updated_at
+                                    body, permanent_id, likes_count,
+                                    private, page_views_count,
+                                    comments_count, reactions_count,
+                                    coediting, created_at, updated_at
                                    )
-            VALUES(:post_id, :url, :title,
-                   :permanent_id, :likes_count,
-                   :created_at, :updated_at                  
-                  )";
+                             VALUES(:post_id, :url, :title,
+                                    :body, :permanent_id, :likes_count,
+                                    :private, :page_views_count,
+                                    :comments_count, :reactions_count,
+                                    :coediting, :created_at, :updated_at
+                                    )";
     $json_count = count($data2['contents']);
-    for($i=$json_count-1;$i>=0;$i--){
-    $params = [':post_id'=>$data2['contents'][$i]['post_id'],
+    for($i=0;$i<$json_count;$i++){
+    $params = [':post_id'=>$data2['contents'][$i]['item_id'],
                ':url'=>$data2['contents'][$i]['link'],
                ':title'=>$data2['contents'][$i]['title'],
+               ':body'=>$data2['contents'][$i]['body'],
                ':permanent_id'=>$data2['contents'][$i]['permanent_id'],
                ':likes_count'=>$data2['contents'][$i]['likes_count'],
-//               ':created_at'=>$data2['contents'][$i]['published']['date'],
-//               ':updated_at'=>$data2['contents'][$i]['updated']['date']
+               ':private'=>$data2['contents'][$i]['private'],
+               ':page_views_count'=>$data2['contents'][$i]['page_views_count'],
+               ':comments_count'=>$data2['contents'][$i]['comments_count'],
+               ':reactions_count'=>$data2['contents'][$i]['reactions_count'],
+               ':coediting'=>$data2['contents'][$i]['coediting'],
+               
+               ':created_at'=>$data2['contents'][$i]['published']->format(DateTime::ATOM),
+               ':updated_at'=>$data2['contents'][$i]['updated']->format(DateTime::ATOM)
+//               ':record_created_at'=>$data2['contents'][$i]['record_created_at']
                ];
         $sth = $this->pdo->prepare($sql,$params);
         $sth->bindParam(':post_id',$params[":post_id"],PDO::PARAM_STR);
         $sth->bindParam(':url',$params[":url"],PDO::PARAM_STR);
         $sth->bindParam(':title',$params[":title"],PDO::PARAM_STR);
+        $sth->bindParam(':body',$params[":body"],PDO::PARAM_STR);
         $sth->bindParam(':permanent_id',$params[":permanent_id"],PDO::PARAM_STR);
-        $sth->bindParam(':likes_count',$params[":likes_count"],PDO::PARAM_STR);
-        $sth->bindParam(':created_at',$params[":created_at"],PDO::PARAM_INT);
-        $sth->bindParam(':updated_at',$params[":updated_at"],PDO::PARAM_INT);
+        $sth->bindParam(':likes_count',$params[":likes_count"],PDO::PARAM_INT);
+        $sth->bindParam(':private',$params[":private"],PDO::PARAM_STR);
+        $sth->bindParam(':page_views_count',$params[":page_views_count"],PDO::PARAM_INT);
+        $sth->bindParam(':comments_count',$params[":comments_count"],PDO::PARAM_INT);
+        $sth->bindParam(':reactions_count',$params[":reactions_count"],PDO::PARAM_INT);
+        $sth->bindParam(':coediting',$params[":coediting"],PDO::PARAM_STR);
+        $sth->bindParam(':created_at',$params[":created_at"],PDO::PARAM_STR);
+        $sth->bindParam(':updated_at',$params[":updated_at"],PDO::PARAM_STR);
+//        $sth->bindParam(':record_creared_at',$params[":record_created_at"],PDO::PARAM_INT);
         $sth->execute();
         }
 }
@@ -147,8 +166,8 @@ function insert_rss_history($data2){
     $db = new Database();
     $sql = "INSERT INTO rss_history(post_id) VALUES(:post_id)";
     $json_count = count($data2['contents']);
-    for($i=$json_count-1;$i>=0;$i--){
-    $params = [':post_id'=>$data2['contents'][$i]['post_id']
+    for($i=0;$i<$json_count;$i++){
+    $params = [':post_id'=>$data2['contents'][$i]['item_id']
               ];
         $sth = $this->pdo->prepare($sql,$params);
         $sth->bindParam(':post_id',$params[":post_id"],PDO::PARAM_STR);
@@ -170,7 +189,7 @@ function tags($data2){
         $tags_count = count($data2['contents'][$i]['tags']);
         for($j=0;$j<$tags_count;$j++){
         $params = [':tags' => $data2['contents'][$i]['tags'][$j],
-                   ':post_id'=>$data2['contents'][$i]['post_id']
+                   ':post_id'=>$data2['contents'][$i]['item_id']
                   ];
         $sth = $this->pdo->prepare($sql,$params);
         $sth->bindParam(':tags',$params[":tags"],PDO::PARAM_STR);

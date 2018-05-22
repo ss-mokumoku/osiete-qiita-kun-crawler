@@ -23,7 +23,9 @@ function extract_qiita_feed($file){
         $entrydata = array(
             "title"     => (string)$entry->title,
             "author"    => (string)$entry->author->name,
+//            "published" => $entry->published,
             "published" => $published,
+//            "updated"   => $updated->updated,
             "updated"   => $updated,
             "link"      => $link,
             "item_id"   => $item,
