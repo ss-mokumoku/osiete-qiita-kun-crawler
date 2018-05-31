@@ -1,6 +1,7 @@
 <?php
 function qiita_json($item){
 //$c = curl_init('https://qiita.com/api/v2/items/'.$item);
+//$c = curl_init('https://qiita.com/api/v2/items/'.$item);
 $c = curl_init('http://10.20.30.99/qiita/'.$item.'.json');
 
 //$c = curl_init($item);
@@ -51,7 +52,7 @@ $contents = array(
     "reactions_count"=>$arr['reactions_count'],
     "coediting"=>$arr['coediting'],
     "tags"         => $tags_count,
-);    
+);
 
 return $contents;
 //print_r ($contents);

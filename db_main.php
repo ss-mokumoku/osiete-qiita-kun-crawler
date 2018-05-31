@@ -82,7 +82,7 @@ class Database
                ':facebook_id'=>$data2['contents'][$i]['facebook_id'],
                ':twitter_screen_name'=>$data2['contents'][$i]['twitter_screen_name'],
                ':website_url'=>$data2['contents'][$i]['website_url']
-              
+
                ];
         $sth = $this->pdo->prepare($sql,$params);
 
@@ -101,7 +101,7 @@ class Database
         $sth->bindParam(':facebook_id',$params[":facebook_id"],PDO::PARAM_STR);
         $sth->bindParam(':twitter_screen_name',$params[":twitter_screen_name"],PDO::PARAM_STR);
         $sth->bindParam(':website_url',$params[":website_url"],PDO::PARAM_STR);
-        
+
         $sth->execute();
     }
 }
@@ -133,7 +133,7 @@ function insert_article($data2){
                ':comments_count'=>$data2['contents'][$i]['comments_count'],
                ':reactions_count'=>$data2['contents'][$i]['reactions_count'],
                ':coediting'=>$data2['contents'][$i]['coediting'],
-               
+
                ':created_at'=>$data2['contents'][$i]['published']->format(DateTime::ATOM),
                ':updated_at'=>$data2['contents'][$i]['updated']->format(DateTime::ATOM)
 //               ':record_created_at'=>$data2['contents'][$i]['record_created_at']
@@ -157,11 +157,6 @@ function insert_article($data2){
         }
 }
 
-//    $res = $db->insert($sql,$params);
-//    print_r($sql);
-
-//    print_r($params);
-//    print_r($res);
 function insert_rss_history($data2){
     $db = new Database();
     $sql = "INSERT INTO rss_history(post_id) VALUES(:post_id)";
@@ -172,10 +167,6 @@ function insert_rss_history($data2){
         $sth = $this->pdo->prepare($sql,$params);
         $sth->bindParam(':post_id',$params[":post_id"],PDO::PARAM_STR);
         $sth->execute();
-//    print_r($sql);
-//    print_r($params);
-//    print_r($res);
-
     }
 }
 
@@ -202,13 +193,13 @@ function tags($data2){
             $sth2->bindParam(':tags',$params[":tags"],PDO::PARAM_STR);
             $sth2->execute();
 //IDを記事のタグ一覧に登録する
-            $d = $this->pdo->lastInsertID();   
+            $d = $this->pdo->lastInsertID();
         }else{
             $d = $tagid[0]['tag_id'];
         }
-            
-        print($d);
-        $sql3 = "insert into qiita_page_tags(post_id,tag_id) 
+
+//        print($d);
+        $sql3 = "insert into qiita_page_tags(post_id,tag_id)
                  values(:post_id,:tag_id)" ;
         $sth3 = $this->pdo->prepare($sql3,$params);
         $sth3->bindParam(':post_id',$params[":post_id"],PDO::PARAM_STR);
@@ -220,23 +211,4 @@ function tags($data2){
 
 }
 
-/*
-    public function insert($sql, array $params = [])
-    {
-        $sth = $this->pdo->prepare($sql,$params); 
-       
-        foreach ($params as $key => $value){
-            var_dump($key);
-            var_dump($value);
-            $sth->bindParam($key,$value,PDO::PARAM_STR);
-        }
-        
-        $sth->bindParam(':permanent_id',$params[":permanent_id"],PDO::PARAM_STR);
-        $sth->bindParam(':user_id',$params[":user_id"],PDO::PARAM_STR);
-        $sth->bindParam(':name',$params[":name"],PDO::PARAM_STR);
-        $sth->bindParam(':profile_image_url',$params[":profile_image_url"],PDO::PARAM_STR);
-        $sth->execute();
-    }
-}
-*/
 ?>

@@ -1,7 +1,5 @@
 <?php
-
-require_once("print.php");
-require_once("qiita_json.php");
+//Qiitaの人気記事のRSSを取得するコードです
 
 function extract_qiita_feed($file){
 
@@ -12,6 +10,7 @@ function extract_qiita_feed($file){
     $feedupdated =(string)$feed->updated;
     $contents = array();
 
+//タイトル、著者、投稿日時、更新日時、リンク、item_idをRSSから抽出します
     foreach($feed->entry as $entry){
         $published = DateTime::createFromFormat(DateTime::ATOM,(string)$entry->published);
         $updated = DateTime::createFromFormat(DateTime::ATOM,(string)$entry->updated);
@@ -19,23 +18,20 @@ function extract_qiita_feed($file){
         $link = urldecode($link);
         $url = parse_url($link);
         $item = basename($url['path']);
-//        $api = qiita_json($item);
+
         $entrydata = array(
             "title"     => (string)$entry->title,
             "author"    => (string)$entry->author->name,
-//            "published" => $entry->published,
             "published" => $published,
-//            "updated"   => $updated->updated,
             "updated"   => $updated,
             "link"      => $link,
             "item_id"   => $item,
-//            "post_id"   => (string)$entry->id
-//            "API"      => $api
         );
-        
+
         $contents[] = $entrydata;
 
     }
+    //RSSのタイトル「Qiita - 人気の投稿」とRSSの更新日時と記事ごとのデータをリターンします
     return array("title" => $feedtitle,"updated" => $feedupdated,"contents" => $contents);
 }
 
@@ -46,5 +42,3 @@ function extract_and_print($filepath) {
     $data = extract_qiita_feed($filepath);
     myprint($data);
 }
-
-

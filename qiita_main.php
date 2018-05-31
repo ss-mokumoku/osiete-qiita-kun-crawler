@@ -5,62 +5,35 @@ require('qiita_json.php');
 require_once ('extract_qiita_feed.php');
 require_once ('qiita_json_api.php');
 require_once('db_main.php');
-//$a = qiita_json('1a49e860a09a613b09d4');
-//print_r ($a);
-//feed.atomを読み込んで、必要な情報を抽出し、表示しているプログラム 
 
+//Qiitaの人気記事を20件RSSから取得します
 //$data = extract_qiita_feed("https://qiita.com/popular-items/feed.atom");
+//↓内部のfeed.atomから人気記事を取得する場合のコード
 $data = extract_qiita_feed("feed.atom");
+
+//RSSのitem_idをもとにAPIにアクセスして必要な情報を配列で返す関数です
 $data2 = qiita_json_api($data);
-//print_r($data2);
 
+//トランザクション
 try{
-    $db = new Database();
-    $db->pdo->beginTransaction();
-
-    $db->insert_author($data2);
-    $db->insert_article($data2);
-    $db->insert_rss_history($data2);    
-    $res = $db->tags($data2);
-    print_r($res);
-
-    $db->pdo->commit();
+  $db = new Database();
+  $db->pdo->beginTransaction();
+//authors_tbl,articles_tbl,rss_history,qiita_page_tags,tags_tbl全てにAPIの情報を登録します
+  $db->insert_author($data2);
+  $db->insert_article($data2);
+  $db->insert_rss_history($data2);
+  $res = $db->tags($data2);
+  print("データベースに登録完了しました。");
+  $db->pdo->commit();
 
 }catch(PDOException $e){
-    $db->pdo->rollBack();
-    echo $e->getMessage();
-    die();
+  $db->pdo->rollBack();
+  echo $e->getMessage();
+  die();
 }
 
 $db = null;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-for($s = 0; $s <= 19;$s++){
-echo $data2['contents'][$s]['permanent_id']."\n";
-}
-*/
-//$a = qiita_json($item_id);
-//print_r ($a);
-
-
-
-//print_r($data);
-
-//#extract_and_print("feed.atom");
 
 
 
