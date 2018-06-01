@@ -1,18 +1,16 @@
 <?php
 function qiita_json($item){
-//$c = curl_init('https://qiita.com/api/v2/items/'.$item);
-//$c = curl_init('https://qiita.com/api/v2/items/'.$item);
-$c = curl_init('http://10.20.30.99/qiita/'.$item.'.json');
 
-//$c = curl_init($item);
+$c = curl_init('https://qiita.com/api/v2/items/'.$item);
+//$c = curl_init('http://10.20.30.99/qiita/'.$item.'.json');
+
 curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
 $json = curl_exec($c);
 
-//json = file_get_contents("qiita_API.json");
 //文字化けをしないようにする
 $json = mb_convert_encoding($json, 'UTF8', 'ASCII,JIS,UTF-8,EUC-JP,SJIS-WIN');
 //連想配列にする
-//var_dump($json);
+
 $arr = json_decode($json,true);
 $json_count = count($arr['tags']);
 $tags_count = array();
@@ -39,9 +37,7 @@ $contents = array(
     "facebook_id"=>$arr['user']['facebook_id'],
     "twitter_screen_name"=>$arr['user']['twitter_screen_name'],
     "website_url"=>$arr['user']['website_url'],
-//    "image_monthly_upload_limit"=>$arr['user']['image_monthly_upload_limit'],
-//    "image_monthly_upload_remaining"=>$arr['user']['image_monthly_upload_remaining'],
-//    "team_only"=>$arr['user']['team_only'],
+
 //articles_tblの項目
     "post_id"      => $arr['id'],
     "body" => $arr['body'],
@@ -53,13 +49,7 @@ $contents = array(
     "coediting"=>$arr['coediting'],
     "tags"         => $tags_count,
 );
-
 return $contents;
-//print_r ($contents);
-//echo $arr['id'];
-//echo $arr['likes_count'];
-//echo $arr['user']['profile_image_url'];
-
 }
 
 

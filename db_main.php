@@ -108,6 +108,21 @@ class Database
 
 function insert_article($data2){
     $db = new Database();
+    $sql = "UPDATE articles_tbl SET likes_count = 100
+            IF @@ROWCOUNT = 0
+            INSERT INTO articles_tbl(post_id, url, title,
+                                    body, permanent_id, likes_count,
+                                    private, page_views_count,
+                                    comments_count, reactions_count,
+                                    coediting, created_at, updated_at
+                                   )
+                             VALUES(:post_id, :url, :title,
+                                    :body, :permanent_id, :likes_count,
+                                    :private, :page_views_count,
+                                    :comments_count, :reactions_count,
+                                    :coediting, :created_at, :updated_at
+                                    )";
+    /*
     $sql = "INSERT INTO articles_tbl(post_id, url, title,
                                     body, permanent_id, likes_count,
                                     private, page_views_count,
@@ -120,6 +135,7 @@ function insert_article($data2){
                                     :comments_count, :reactions_count,
                                     :coediting, :created_at, :updated_at
                                     )";
+    */
     $json_count = count($data2['contents']);
     for($i=0;$i<$json_count;$i++){
     $params = [':post_id'=>$data2['contents'][$i]['item_id'],
