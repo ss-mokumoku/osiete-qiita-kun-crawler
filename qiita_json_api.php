@@ -1,12 +1,12 @@
 <?php
-require_once("qiita_json.php");
-require_once("extract_qiita_feed.php");
+require_once ("qiita_json.php");
+require_once ("extract_qiita_feed.php");
 
 function qiita_json_api($rss_data){
-//配列をうけとってitem_idだけ抜き取る
+    //配列をうけとってitem_idだけ抜き取る
 
-        $json_count = count($rss_data['contents']);
-        for($i=$json_count-1;$i>=0;$i--){
+    $json_count = count($rss_data['contents']);
+    for($i=$json_count-1;$i>=0;$i--){
 
         $item_id = $rss_data['contents'][$i]['item_id'];
         $API = qiita_json($item_id);
@@ -33,19 +33,9 @@ function qiita_json_api($rss_data){
         $rss_data['contents'][$i]['reactions_count'] = $API['reactions_count'];
         $rss_data['contents'][$i]['coediting'] = $API['coediting'];
         $rss_data['contents'][$i]['tags'] = $API['tags'];
-//  5秒間隔でループを行うことも可能      sleep(5);
+        //  5秒間隔でループを行うことも可能      sleep(5);
     }
+    return $rss_data;
+}
 
-return $rss_data;
-}
-/*
-$API = qiita_json($item_id_count[0]);
-//要素を追加する
-$data['contents']['id'] = $API['id'];
-$data['contents']['likes_count'] = $API['like_count'];
-$data['contents']['user'] = $API['user'];
-$data['contents']['tags'] = $API['tags'];
-print_r($data);
-}
-*/
 ?>
