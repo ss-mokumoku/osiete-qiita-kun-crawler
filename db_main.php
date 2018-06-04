@@ -101,8 +101,8 @@ class Database
             $sth->bindParam(':facebook_id',$params[":facebook_id"],PDO::PARAM_STR);
             $sth->bindParam(':twitter_screen_name',$params[":twitter_screen_name"],PDO::PARAM_STR);
             $sth->bindParam(':website_url',$params[":website_url"],PDO::PARAM_STR);
+            $sth->execute();
         }
-        $sth->execute();
     }
 
     function insert_article($data2){
@@ -153,8 +153,8 @@ class Database
             $sth->bindParam(':coediting',$params[":coediting"],PDO::PARAM_STR);
             $sth->bindParam(':created_at',$params[":created_at"],PDO::PARAM_STR);
             $sth->bindParam(':updated_at',$params[":updated_at"],PDO::PARAM_STR);
+            $sth->execute();
         }
-        $sth->execute();
     }
 
     function insert_rss_history($data2){
@@ -164,8 +164,8 @@ class Database
         for($i=0;$i<$json_count;$i++){
             $params = [':post_id'=>$data2['contents'][$i]['item_id']];
             $sth->bindParam(':post_id',$params[":post_id"],PDO::PARAM_STR);
+            $sth->execute();
         }
-        $sth->execute();
     }
 
     function tags($data2){
