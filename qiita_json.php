@@ -5,7 +5,6 @@ function qiita_json($item) {
     $c = curl_init('https://qiita.com/api/v2/items/'.$item);
     if(!empty(getenv('QIITA_ACCESS_TOKEN'))) { // 環境変数にアクセストークンが指定されていたらアクセストークンを有効にする
         $token = getenv('QIITA_ACCESS_TOKEN');
-        echo $token .PHP_EOL;
         curl_setopt($c, CURLOPT_HTTPHEADER, [
             'Authorization: Bearer '.$token,
             'Content-Type: application/json'
