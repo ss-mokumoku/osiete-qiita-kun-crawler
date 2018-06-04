@@ -73,6 +73,7 @@ class Database
             :website_url
         )';
         $json_count = count($data2['contents']);
+        $sth = $this->pdo->prepare($sql);
         for ($i = 0; $i < $json_count; ++$i) {
             $params = [':permanent_id' => $data2['contents'][$i]['permanent_id'],
                 ':user_id' => $data2['contents'][$i]['user_id'],
@@ -90,7 +91,6 @@ class Database
                 ':twitter_screen_name' => $data2['contents'][$i]['twitter_screen_name'],
                 ':website_url' => $data2['contents'][$i]['website_url'],
             ];
-            $sth = $this->pdo->prepare($sql, $params);
 
             $sth->bindParam(':permanent_id', $params[':permanent_id'], PDO::PARAM_STR);
             $sth->bindParam(':user_id', $params[':user_id'], PDO::PARAM_STR);
@@ -182,10 +182,10 @@ class Database
     {
         $sql = 'INSERT INTO rss_history(post_id) VALUES(:post_id)';
         $json_count = count($data2['contents']);
+        $sth = $this->pdo->prepare($sql);
         for ($i = 0; $i < $json_count; ++$i) {
             $params = [':post_id' => $data2['contents'][$i]['item_id'],
             ];
-            $sth = $this->pdo->prepare($sql, $params);
             $sth->bindParam(':post_id', $params[':post_id'], PDO::PARAM_STR);
             $sth->execute();
         }
@@ -195,22 +195,25 @@ class Database
     {
         //タグがすでにタグ管理テーブルに登録されていたらIDを返す
         $sql = 'select tag_id from tags_tbl where tag_name=(:tags)';
+        $sql2 = 'insert into tags_tbl(tag_name) values(:tags)';
+        $sql3 = 'insert into qiita_page_tags(post_id,tag_id)
+                    values(:post_id,:tag_id)';
+        $sth = $this->pdo->prepare($sql);
+        $sth2 = $this->pdo->prepare($sql2);
+        $sth3 = $this->pdo->prepare($sql3);
         $json_count = count($data2['contents']);
-
         for ($i = 0; $i < $json_count; ++$i) {
             $tags_count = count($data2['contents'][$i]['tags']);
             for ($j = 0; $j < $tags_count; ++$j) {
                 $params = [':tags' => $data2['contents'][$i]['tags'][$j],
                     ':post_id' => $data2['contents'][$i]['item_id'],
                 ];
-                $sth = $this->pdo->prepare($sql, $params);
                 $sth->bindParam(':tags', $params[':tags'], PDO::PARAM_STR);
                 $sth->execute();
                 $tagid = $sth->fetchAll(PDO::FETCH_ASSOC);
+
                 //タグ管理テーブルに登録されていなければ登録する
                 if (empty($tagid)) {
-                    $sql2 = 'insert into tags_tbl(tag_name) values(:tags)';
-                    $sth2 = $this->pdo->prepare($sql2, $params);
                     $sth2->bindParam(':tags', $params[':tags'], PDO::PARAM_STR);
                     $sth2->execute();
                     //IDを記事のタグ一覧に登録する
@@ -220,9 +223,7 @@ class Database
                 }
 
                 //        print($d);
-                $sql3 = 'insert into qiita_page_tags(post_id,tag_id)
-        values(:post_id,:tag_id)';
-                $sth3 = $this->pdo->prepare($sql3, $params);
+
                 $sth3->bindParam(':post_id', $params[':post_id'], PDO::PARAM_STR);
                 $sth3->bindParam(':tag_id', $d, PDO::PARAM_STR);
                 $sth3->execute();
