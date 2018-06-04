@@ -106,9 +106,7 @@ class Database
     }
 
     function insert_article($data2){
-        $sql = "UPDATE articles_tbl SET likes_count = 100
-                IF @@ROWCOUNT = 0
-                INSERT INTO articles_tbl(post_id, url, title,
+        $sql = "INSERT INTO articles_tbl(post_id, url, title,
                                          body, permanent_id, likes_count,
                                          private, page_views_count,
                                          comments_count, reactions_count,
