@@ -8,15 +8,18 @@ require_once 'db_main.php';
 
 //Qiitaの人気記事を20件RSSから取得します
 $rss_data = extract_qiita_feed('https://qiita.com/popular-items/feed.atom');
-//↓内部のfeed.atomから人気記事を取得する場合のコード
-//$data = extract_qiita_feed("feed.atom");
+/*
+↓内部のfeed.atomから人気記事を取得する場合のコード
+$data = extract_qiita_feed("feed.atom");
+*/
+$db = new Database();
+$db->insert_crawl_history();
 
 //RSSのitem_idをもとにAPIにアクセスして必要な情報を配列で返す関数です
 $api_data = qiita_json_api($rss_data);
 
 //トランザクション
 try {
-    $db = new Database();
     $db->pdo->beginTransaction();
     //authors_tbl,articles_tbl,rss_history,qiita_page_tags,tags_tbl全てにAPIの情報を登録します
     $db->insert_author($api_data);

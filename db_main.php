@@ -6,7 +6,7 @@
 class Database
 {
     public $pdo; // PDOのインスタンスを保持する
-    private $host = 'localhost';
+    public $host = 'localhost';
     private $user = 'root';
     private $pass = 'systemsoftkensyu2018';
     private $databaseName = 'qiita_kadai';
@@ -18,6 +18,7 @@ class Database
     public function __construct()
     {
         $this->pdo = new PDO('mysql:host=localhost;dbname=qiita_kadai', 'root', 'systemsoftkensyu2018');
+//        $this->pdo = new PDO('mysql:host='.$host.';dbname='.$databaseName, $user, $pass);
         // MySQLに接続する
     }
 
@@ -229,5 +230,15 @@ class Database
                 $sth3->execute();
             }
         }
+    }
+
+    public function insert_crawl_history()
+    {
+        $date = new DateTime();
+        $date = (string) $date->format('Y-m-d H:i:s');
+        $sql = 'INSERT INTO crawl_history(rss_updated) VALUES (:created)';
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindParam(':created', $date, PDO::PARAM_STR);
+        $stmt->execute();
     }
 }
