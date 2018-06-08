@@ -1,16 +1,14 @@
 <?php
 
-require_once 'qiita_json.php';
+require_once 'extract_api.php';
 require_once 'extract_qiita_feed.php';
 
-function qiita_json_api($rss_data)
+function integrate_rss_api($rss_data)
 {
     //配列をうけとってitem_idだけ抜き取る
-
-    $json_count = count($rss_data['contents']);
-    for ($i = $json_count - 1; $i >= 0; --$i) {
+    for ($i = count($rss_data['contents']) - 1; $i >= 0; --$i) {
         $item_id = $rss_data['contents'][$i]['item_id'];
-        $API = qiita_json($item_id);
+        $API = extract_api($item_id);
         //要素を追加する
         $rss_data['contents'][$i]['permanent_id'] = $API['permanent_id'];
         $rss_data['contents'][$i]['user_id'] = $API['user_id'];

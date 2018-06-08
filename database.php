@@ -73,9 +73,8 @@ class Database
             :facebook_id, :twitter_screen_name,
             :website_url
         )';
-        $json_count = count($data2['contents']);
         $sth = $this->pdo->prepare($sql);
-        for ($i = 0; $i < $json_count; ++$i) {
+        for ($i = 0; $i < count($data2['contents']); ++$i) {
             $params = [':permanent_id' => $data2['contents'][$i]['permanent_id'],
                 ':user_id' => $data2['contents'][$i]['user_id'],
                 ':name' => $data2['contents'][$i]['author'],
@@ -108,26 +107,44 @@ class Database
             $sth->bindParam(':facebook_id', $params[':facebook_id'], PDO::PARAM_STR);
             $sth->bindParam(':twitter_screen_name', $params[':twitter_screen_name'], PDO::PARAM_STR);
             $sth->bindParam(':website_url', $params[':website_url'], PDO::PARAM_STR);
-
             $sth->execute();
         }
     }
 
     public function insert_article($data2)
     {
-        $sql = '
-    INSERT INTO articles_tbl(post_id, url, title,
-    body, permanent_id, likes_count,
-    private, page_views_count,
-    comments_count, reactions_count,
-    coediting, created_at, updated_at
-    )
-    VALUES(:post_id, :url, :title,
-    :body, :permanent_id, :likes_count,
-    :private, :page_views_count,
-    :comments_count, :reactions_count,
-    :coediting, :created_at, :updated_at
-    )';
+        $sql = 'INSERT INTO articles_tbl(post_id, url, title,
+        body, permanent_id, likes_count,
+        private, page_views_count,
+        comments_count, reactions_count,
+        coediting, created_at, updated_at
+        )
+        VALUES(:post_id, :url, :title,
+        :body, :permanent_id, :likes_count,
+        :private, :page_views_count,
+        :comments_count, :reactions_count,
+        :coediting, :created_at, :updated_at)
+        ON DUPLICATE KEY UPDATE
+        likes_count = :likes_count';
+
+        /*
+                $sql = 'UPDATE articles_tbl
+                SET likes_count = :likes_count
+                WHERE post_id = :post_id
+                IF @@ROWCOUNT = 0
+                INSERT INTO articles_tbl(post_id, url, title,
+                body, permanent_id, likes_count,
+                private, page_views_count,
+                comments_count, reactions_count,
+                coediting, created_at, updated_at
+                )
+                VALUES(:post_id, :url, :title,
+                :body, :permanent_id, :likes_count,
+                :private, :page_views_count,
+                :comments_count, :reactions_count,
+                :coediting, :created_at, :updated_at
+                )';
+        */
         /*
         $sql = "INSERT INTO articles_tbl(post_id, url, title,
         body, permanent_id, likes_count,
@@ -142,8 +159,7 @@ class Database
         :coediting, :created_at, :updated_at
         )";
         */
-        $json_count = count($data2['contents']);
-        for ($i = 0; $i < $json_count; ++$i) {
+        for ($i = 0; $i < count($data2['contents']); ++$i) {
             $params = [':post_id' => $data2['contents'][$i]['item_id'],
                 ':url' => $data2['contents'][$i]['link'],
                 ':title' => $data2['contents'][$i]['title'],
@@ -179,20 +195,21 @@ class Database
         }
     }
 
-    public function insert_rss_history($data2)
+    public function insert_rss_history($api_data)
     {
-        $sql = 'INSERT INTO rss_history(post_id) VALUES(:post_id)';
-        $json_count = count($data2['contents']);
+        $sql = 'INSERT INTO rss_history(post_id) VALUES(:post_id)
+        ';
+//      $sql = 'INSERT INTO rss_history(post_id) VALUES(:post_id)';
         $sth = $this->pdo->prepare($sql);
-        for ($i = 0; $i < $json_count; ++$i) {
-            $params = [':post_id' => $data2['contents'][$i]['item_id'],
+        for ($i = 0; $i < count($api_data['contents']); ++$i) {
+            $params = [':post_id' => $api_data['contents'][$i]['item_id'],
             ];
             $sth->bindParam(':post_id', $params[':post_id'], PDO::PARAM_STR);
             $sth->execute();
         }
     }
 
-    public function tags($data2)
+    public function insert_tags($api_data)
     {
         //タグがすでにタグ管理テーブルに登録されていたらIDを返す
         $sql = 'select tag_id from tags_tbl where tag_name=(:tags)';
@@ -202,12 +219,10 @@ class Database
         $sth = $this->pdo->prepare($sql);
         $sth2 = $this->pdo->prepare($sql2);
         $sth3 = $this->pdo->prepare($sql3);
-        $json_count = count($data2['contents']);
-        for ($i = 0; $i < $json_count; ++$i) {
-            $tags_count = count($data2['contents'][$i]['tags']);
-            for ($j = 0; $j < $tags_count; ++$j) {
-                $params = [':tags' => $data2['contents'][$i]['tags'][$j],
-                    ':post_id' => $data2['contents'][$i]['item_id'],
+        for ($i = 0; $i < count($api_data['contents']); ++$i) {
+            for ($j = 0; $j < count($api_data['contents'][$i]['tags']); ++$j) {
+                $params = [':tags' => $api_data['contents'][$i]['tags'][$j],
+                    ':post_id' => $api_data['contents'][$i]['item_id'],
                 ];
                 $sth->bindParam(':tags', $params[':tags'], PDO::PARAM_STR);
                 $sth->execute();
@@ -232,13 +247,42 @@ class Database
         }
     }
 
-    public function insert_crawl_history()
+    public function insert_crawl_history($rss_data)
     {
+        /*
+        現在の時刻を登録する場合
         $date = new DateTime();
         $date = (string) $date->format('Y-m-d H:i:s');
-        $sql = 'INSERT INTO crawl_history(rss_updated) VALUES (:created)';
+        */
+        $sql = 'INSERT IGNORE INTO crawl_history(rss_updated) VALUES (:created)';
+//        $sql = 'INSERT INTO crawl_history(rss_updated)
+//        SELECT ':created' from crawl_history ';
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindParam(':created', $date, PDO::PARAM_STR);
+        $stmt->bindParam(':created', $rss_data['updated'], PDO::PARAM_STR);
+        $stmt->execute();
+    }
+
+    public function insert_likescount_history()
+    {
+        $sql = 'INSERT INTO likes_history(likes_count, rss_history_id)
+                SELECT articles_tbl.likes_count ,rss_history.id
+                FROM articles_tbl, rss_history
+                WHERE articles_tbl.post_id = rss_history.post_id
+                ORDER BY record_crated_at DESC
+                LIMIT 20';
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute();
+    }
+
+    public function insert_page_views_count_history()
+    {
+        $sql = 'INSERT INTO page_views_count_history(page_views_count, rss_history_id)
+                SELECT articles_tbl.page_views_count ,rss_history.id
+                FROM articles_tbl, rss_history
+                WHERE articles_tbl.post_id = rss_history.post_id
+                ORDER BY record_crated_at DESC
+                LIMIT 20';
+        $stmt = $this->pdo->prepare($sql);
         $stmt->execute();
     }
 }
