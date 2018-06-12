@@ -1,6 +1,14 @@
 <?php
+/**	@file
+ *  @brief APIからコメント情報を抽出する
+ *
+ *  @author SystemSoft Arita-takahiro
+ *  @date 2018/05/21
+ */
 
+//データベースファイルの呼び出し
 require 'db_main.php';
+//インスタンス作成
 $db = new Database();
 
 $sql = 'SELECT post_id FROM articles_tbl';
@@ -11,8 +19,10 @@ $res = $sth->fetchAll(PDO::FETCH_ASSOC);
 
 $comment_arr = [];
 $comment_count = count($res);
-//for ($i = 0; $i < $comment_count; ++$i) {
-for ($i = 2; $i < 3; ++$i) {
+
+//  APIをたたいて、コメントの情報を取得して連想配列で返す
+for ($i = 0; $i < $comment_count; ++$i) {
+    //for ($i = 2; $i < 3; ++$i) { APIを複数回たたかないようにするためのコード
     $c = curl_init('https://qiita.com/api/v2/items/'.$res[$i]['post_id'].'/comments');
     //$c = curl_init('http://10.20.30.99/qiita/'.$item.'.json');
     curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
@@ -30,6 +40,13 @@ comment_author($comment_arr);
 //コメントの情報をcomment_tblに格納します
 comment_insert($comment_arr);
 
+/**
+ *  @brief コメントの情報をcomment_tblに格納する
+ *  @date 2018/05/21
+ *  @note
+ *
+ * @param mixed $comment_arr コメント情報の連想配列
+ */
 function comment_insert($comment_arr)
 {
     $db = new Database();
@@ -60,7 +77,13 @@ function comment_insert($comment_arr)
     }
 }
 
-//コメントしたユーザーの情報をauthors_tblに格納する関数
+/**
+ *  @brief コメントしたユーザーの情報をauthors_tblに格納する関数
+ *  @date 2018/05/21
+ *  @note
+ *
+ * @param mixed $comment_arr コメント情報の連想配列
+ */
 function comment_author($comment_arr)
 {
     $db = new Database();

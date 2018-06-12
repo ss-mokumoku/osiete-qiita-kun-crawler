@@ -1,10 +1,16 @@
 <?php
-
-//Qiitaの人気記事のRSSを取得するコードです
-
-function extract_qiita_feed($file)
+/**	@file
+ *  @brief Qiitaの人気記事のRSSを取得するコードです
+ *
+ *  @author SystemSoft Arita-takahiro
+ *  @date 2018/05/21 新規作成
+ *
+ * @param mixed $file
+ * @param mixed $feed_atom
+ */
+function extract_qiita_feed($feed_atom)
 {
-    $xmlstr = file_get_contents($file);
+    $xmlstr = file_get_contents($feed_atom);
     $feed = new SimpleXMLElement($xmlstr);
 
     $feedtitle = (string) $feed->title;

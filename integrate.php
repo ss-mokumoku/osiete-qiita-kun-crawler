@@ -1,15 +1,22 @@
 <?php
-
+/**	@file
+ *  @brief RSSの情報とAPIの情報をつなぎ合わせて連想配列をつくる
+ *
+ *  @author SystemSoft Arita-takahiro
+ *  @date 2018/05/21 新規作成
+ *
+ * @param mixed $rss_data
+ */
 require_once 'extract_api.php';
 require_once 'extract_qiita_feed.php';
 
 function integrate_rss_api($rss_data)
 {
     //配列をうけとってitem_idだけ抜き取る
-    for ($i = count($rss_data['contents']) - 1; $i >= 0; --$i) {
+    for ($i = 0; $i < count($rss_data['contents']); ++$i) {
         $item_id = $rss_data['contents'][$i]['item_id'];
         $API = extract_api($item_id);
-        //要素を追加する
+        //RSSの配列にAPIの要素を追加する
         $rss_data['contents'][$i]['permanent_id'] = $API['permanent_id'];
         $rss_data['contents'][$i]['user_id'] = $API['user_id'];
         $rss_data['contents'][$i]['profile_image_url'] = $API['profile_image_url'];

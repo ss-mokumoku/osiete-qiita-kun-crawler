@@ -1,7 +1,10 @@
 <?php
 
-/**
- * Databaseの基本クラス.
+/**	@file
+ *  @brief Databaseの基本クラス
+ *
+ *  @author SystemSoft Arita-takahiro
+ *  @date 2018/05/21
  */
 class Database
 {
@@ -17,13 +20,10 @@ class Database
      */
     public function __construct()
     {
-        $this->pdo = new PDO('mysql:host=localhost;dbname=qiita_kadai', 'root', 'systemsoftkensyu2018');
-//        $this->pdo = new PDO('mysql:host='.$host.';dbname='.$databaseName, $user, $pass);
+        // $this->pdo = new PDO('mysql:host='.$host.';dbname='.$databaseName, $user, $pass);
         // MySQLに接続する
+        $this->pdo = new PDO('mysql:host=localhost;dbname=qiita_kadai', 'root', 'systemsoftkensyu2018');
     }
-
-    //    トランザクション
-    //    $pdo -> beginTransaction();
 
     /**
      * select文を実行する汎用SQL.
@@ -47,13 +47,14 @@ class Database
     /**
      * insert文を実行する.
      *
-     * @param string $sql    insert文
-     * @param array  $params select文に入れる汎用パラメータ。キーは名前付きプリペアドステートメント（例： ':name'）
+     * @param string $sql      insert文
+     * @param array  $params   select文に入れる汎用パラメータ。キーは名前付きプリペアドステートメント（例： ':name'）
      * @param mixed  $data2
+     * @param mixed  $api_data
      *
      * @throws PDOException
      */
-    public function insert_author($data2)
+    public function insert_author($api_data)
     {
         $sql = 'INSERT INTO authors_tbl(permanent_id, user_id,
             name, profile_image_url,
@@ -74,22 +75,22 @@ class Database
             :website_url
         )';
         $sth = $this->pdo->prepare($sql);
-        for ($i = 0; $i < count($data2['contents']); ++$i) {
-            $params = [':permanent_id' => $data2['contents'][$i]['permanent_id'],
-                ':user_id' => $data2['contents'][$i]['user_id'],
-                ':name' => $data2['contents'][$i]['author'],
-                ':profile_image_url' => $data2['contents'][$i]['profile_image_url'],
-                ':description' => $data2['contents'][$i]['description'],
-                ':location' => $data2['contents'][$i]['location'],
-                ':organization' => $data2['contents'][$i]['organization'],
-                ':followees_count' => $data2['contents'][$i]['followees_count'],
-                ':followers_count' => $data2['contents'][$i]['followers_count'],
-                ':items_count' => $data2['contents'][$i]['items_count'],
-                ':github_login_name' => $data2['contents'][$i]['github_login_name'],
-                ':linkedin_id' => $data2['contents'][$i]['linkedin_id'],
-                ':facebook_id' => $data2['contents'][$i]['facebook_id'],
-                ':twitter_screen_name' => $data2['contents'][$i]['twitter_screen_name'],
-                ':website_url' => $data2['contents'][$i]['website_url'],
+        for ($i = 0; $i < count($api_data['contents']); ++$i) {
+            $params = [':permanent_id' => $api_data['contents'][$i]['permanent_id'],
+                ':user_id' => $api_data['contents'][$i]['user_id'],
+                ':name' => $api_data['contents'][$i]['author'],
+                ':profile_image_url' => $api_data['contents'][$i]['profile_image_url'],
+                ':description' => $api_data['contents'][$i]['description'],
+                ':location' => $api_data['contents'][$i]['location'],
+                ':organization' => $api_data['contents'][$i]['organization'],
+                ':followees_count' => $api_data['contents'][$i]['followees_count'],
+                ':followers_count' => $api_data['contents'][$i]['followers_count'],
+                ':items_count' => $api_data['contents'][$i]['items_count'],
+                ':github_login_name' => $api_data['contents'][$i]['github_login_name'],
+                ':linkedin_id' => $api_data['contents'][$i]['linkedin_id'],
+                ':facebook_id' => $api_data['contents'][$i]['facebook_id'],
+                ':twitter_screen_name' => $api_data['contents'][$i]['twitter_screen_name'],
+                ':website_url' => $api_data['contents'][$i]['website_url'],
             ];
 
             $sth->bindParam(':permanent_id', $params[':permanent_id'], PDO::PARAM_STR);
@@ -111,7 +112,16 @@ class Database
         }
     }
 
-    public function insert_article($data2)
+    /**
+     *  @brief APIの情報をarticles_tblに格納
+     *  @date 2018/06/11
+     *  @note
+     *
+     * @param mixed $comment_arr コメント情報の連想配列
+     * @param mixed $data2
+     * @param mixed $api_data
+     */
+    public function insert_article($api_data)
     {
         $sql = 'INSERT INTO articles_tbl(post_id, url, title,
         body, permanent_id, likes_count,
@@ -127,56 +137,24 @@ class Database
         ON DUPLICATE KEY UPDATE
         likes_count = :likes_count';
 
-        /*
-                $sql = 'UPDATE articles_tbl
-                SET likes_count = :likes_count
-                WHERE post_id = :post_id
-                IF @@ROWCOUNT = 0
-                INSERT INTO articles_tbl(post_id, url, title,
-                body, permanent_id, likes_count,
-                private, page_views_count,
-                comments_count, reactions_count,
-                coediting, created_at, updated_at
-                )
-                VALUES(:post_id, :url, :title,
-                :body, :permanent_id, :likes_count,
-                :private, :page_views_count,
-                :comments_count, :reactions_count,
-                :coediting, :created_at, :updated_at
-                )';
-        */
-        /*
-        $sql = "INSERT INTO articles_tbl(post_id, url, title,
-        body, permanent_id, likes_count,
-        private, page_views_count,
-        comments_count, reactions_count,
-        coediting, created_at, updated_at
-        )
-        VALUES(:post_id, :url, :title,
-        :body, :permanent_id, :likes_count,
-        :private, :page_views_count,
-        :comments_count, :reactions_count,
-        :coediting, :created_at, :updated_at
-        )";
-        */
-        for ($i = 0; $i < count($data2['contents']); ++$i) {
-            $params = [':post_id' => $data2['contents'][$i]['item_id'],
-                ':url' => $data2['contents'][$i]['link'],
-                ':title' => $data2['contents'][$i]['title'],
-                ':body' => $data2['contents'][$i]['body'],
-                ':permanent_id' => $data2['contents'][$i]['permanent_id'],
-                ':likes_count' => $data2['contents'][$i]['likes_count'],
-                ':private' => $data2['contents'][$i]['private'],
-                ':page_views_count' => $data2['contents'][$i]['page_views_count'],
-                ':comments_count' => $data2['contents'][$i]['comments_count'],
-                ':reactions_count' => $data2['contents'][$i]['reactions_count'],
-                ':coediting' => $data2['contents'][$i]['coediting'],
+        for ($i = 0; $i < count($api_data['contents']); ++$i) {
+            $params = [':post_id' => $api_data['contents'][$i]['item_id'],
+                ':url' => $api_data['contents'][$i]['link'],
+                ':title' => $api_data['contents'][$i]['title'],
+                ':body' => $api_data['contents'][$i]['body'],
+                ':permanent_id' => $api_data['contents'][$i]['permanent_id'],
+                ':likes_count' => $api_data['contents'][$i]['likes_count'],
+                ':private' => $api_data['contents'][$i]['private'],
+                ':page_views_count' => $api_data['contents'][$i]['page_views_count'],
+                ':comments_count' => $api_data['contents'][$i]['comments_count'],
+                ':reactions_count' => $api_data['contents'][$i]['reactions_count'],
+                ':coediting' => $api_data['contents'][$i]['coediting'],
 
-                ':created_at' => $data2['contents'][$i]['published']->format(DateTime::ATOM),
-                ':updated_at' => $data2['contents'][$i]['updated']->format(DateTime::ATOM),
+                ':created_at' => $api_data['contents'][$i]['published']->format(DateTime::ATOM),
+                ':updated_at' => $api_data['contents'][$i]['updated']->format(DateTime::ATOM),
                 //               ':record_created_at'=>$data2['contents'][$i]['record_created_at']
             ];
-            $sth = $this->pdo->prepare($sql, $params);
+            $sth = $this->pdo->prepare($sql);
             $sth->bindParam(':post_id', $params[':post_id'], PDO::PARAM_STR);
             $sth->bindParam(':url', $params[':url'], PDO::PARAM_STR);
             $sth->bindParam(':title', $params[':title'], PDO::PARAM_STR);
@@ -195,6 +173,14 @@ class Database
         }
     }
 
+    /**
+     *  @brief APIの情報をarticles_tblに格納
+     *  @date 2018/06/11
+     *  @note
+     *
+     * @param mixed $comment_arr コメント情報の連想配列
+     * @param mixed $api_data
+     */
     public function insert_rss_history($api_data)
     {
         $sql = 'INSERT INTO rss_history(post_id) VALUES(:post_id)
@@ -209,6 +195,13 @@ class Database
         }
     }
 
+    /**
+     *  @brief APIの情報をtags_tblに格納
+     *  @date 2018/06/11
+     *  @note
+     *
+     * @param mixed $api_data
+     */
     public function insert_tags($api_data)
     {
         //タグがすでにタグ管理テーブルに登録されていたらIDを返す
@@ -247,6 +240,13 @@ class Database
         }
     }
 
+    /**
+     *  @brief クロールした日時をcrawl_historyに登録する
+     *  @date 2018/06/11
+     *  @note
+     *
+     * @param mixed $rss_data
+     */
     public function insert_crawl_history($rss_data)
     {
         /*
@@ -255,13 +255,16 @@ class Database
         $date = (string) $date->format('Y-m-d H:i:s');
         */
         $sql = 'INSERT IGNORE INTO crawl_history(rss_updated) VALUES (:created)';
-//        $sql = 'INSERT INTO crawl_history(rss_updated)
-//        SELECT ':created' from crawl_history ';
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindParam(':created', $rss_data['updated'], PDO::PARAM_STR);
         $stmt->execute();
     }
 
+    /**
+     *  @brief 人気記事20件のいいね数をlikescount_historyに登録する
+     *  @date 2018/06/11
+     *  @note
+     */
     public function insert_likescount_history()
     {
         $sql = 'INSERT INTO likes_history(likes_count, rss_history_id)
@@ -274,6 +277,11 @@ class Database
         $stmt->execute();
     }
 
+    /**
+     *  @brief 人気記事20件の閲覧数をpage_views_count_historyに登録する
+     *  @date 2018/06/11
+     *  @note
+     */
     public function insert_page_views_count_history()
     {
         $sql = 'INSERT INTO page_views_count_history(page_views_count, rss_history_id)
