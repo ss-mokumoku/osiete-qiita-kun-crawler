@@ -25,6 +25,7 @@ $db->insert_crawl_history($rss_data);
 
 //RSSのitem_idにAPIの情報を付け加えて、結果を連想配列にして返す
 $api_data = integrate_rss_api($rss_data);
+print_r($api_data);
 
 //トランザクション
 try {

@@ -75,6 +75,7 @@ class Database
             :website_url
         )';
         $sth = $this->pdo->prepare($sql);
+        //nameなどの記事の作者の情報をSQL文にバインドして、authors_tblにバインドする
         for ($i = 0; $i < count($api_data['contents']); ++$i) {
             $params = [':permanent_id' => $api_data['contents'][$i]['permanent_id'],
                 ':user_id' => $api_data['contents'][$i]['user_id'],
@@ -114,12 +115,10 @@ class Database
 
     /**
      *  @brief APIの情報をarticles_tblに格納
-     *  @date 2018/06/11
+     *  @date 2018/05/21
      *  @note
      *
-     * @param mixed $comment_arr コメント情報の連想配列
-     * @param mixed $data2
-     * @param mixed $api_data
+     *  @param array $api_data
      */
     public function insert_article($api_data)
     {
@@ -136,7 +135,7 @@ class Database
         :coediting, :created_at, :updated_at)
         ON DUPLICATE KEY UPDATE
         likes_count = :likes_count';
-
+        //nameなどの記事情報をSQL文にバインドして、articles_tblにバインドする
         for ($i = 0; $i < count($api_data['contents']); ++$i) {
             $params = [':post_id' => $api_data['contents'][$i]['item_id'],
                 ':url' => $api_data['contents'][$i]['link'],
@@ -175,10 +174,9 @@ class Database
 
     /**
      *  @brief APIの情報をarticles_tblに格納
-     *  @date 2018/06/11
+     *  @date 2018/05/21
      *  @note
      *
-     * @param mixed $comment_arr コメント情報の連想配列
      * @param mixed $api_data
      */
     public function insert_rss_history($api_data)
@@ -197,7 +195,7 @@ class Database
 
     /**
      *  @brief APIの情報をtags_tblに格納
-     *  @date 2018/06/11
+     *  @date 2018/05/21
      *  @note
      *
      * @param mixed $api_data
@@ -212,6 +210,8 @@ class Database
         $sth = $this->pdo->prepare($sql);
         $sth2 = $this->pdo->prepare($sql2);
         $sth3 = $this->pdo->prepare($sql3);
+        //人気記事20件のタグ情報をtags_tblに登録する
+        //その後に、qiita_page_tagsにtag_idを登録する
         for ($i = 0; $i < count($api_data['contents']); ++$i) {
             for ($j = 0; $j < count($api_data['contents'][$i]['tags']); ++$j) {
                 $params = [':tags' => $api_data['contents'][$i]['tags'][$j],
@@ -242,7 +242,7 @@ class Database
 
     /**
      *  @brief クロールした日時をcrawl_historyに登録する
-     *  @date 2018/06/11
+     *  @date 2018/05/21
      *  @note
      *
      * @param mixed $rss_data
@@ -255,6 +255,8 @@ class Database
         $date = (string) $date->format('Y-m-d H:i:s');
         */
         $sql = 'INSERT IGNORE INTO crawl_history(rss_updated) VALUES (:created)';
+//        $sql = 'INSERT INTO crawl_history(rss_updated)
+//        SELECT ':created' from crawl_history ';
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindParam(':created', $rss_data['updated'], PDO::PARAM_STR);
         $stmt->execute();
@@ -262,7 +264,7 @@ class Database
 
     /**
      *  @brief 人気記事20件のいいね数をlikescount_historyに登録する
-     *  @date 2018/06/11
+     *  @date 2018/05/21
      *  @note
      */
     public function insert_likescount_history()
@@ -279,7 +281,7 @@ class Database
 
     /**
      *  @brief 人気記事20件の閲覧数をpage_views_count_historyに登録する
-     *  @date 2018/06/11
+     *  @date 2018/05/21
      *  @note
      */
     public function insert_page_views_count_history()

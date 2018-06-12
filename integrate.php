@@ -12,7 +12,9 @@ require_once 'extract_qiita_feed.php';
 
 function integrate_rss_api($rss_data)
 {
-    //配列をうけとってitem_idだけ抜き取る
+    //RSSの配列をうけとってitem_idだけ抜き取る
+    //その後item_idを利用してAPIの情報（配列）を取得する
+    //RSSの配列とAPIの情報をくっつけて、それを連想配列にしてリターンする
     for ($i = 0; $i < count($rss_data['contents']); ++$i) {
         $item_id = $rss_data['contents'][$i]['item_id'];
         $API = extract_api($item_id);

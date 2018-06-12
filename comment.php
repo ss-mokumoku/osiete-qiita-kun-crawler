@@ -54,9 +54,10 @@ function comment_insert($comment_arr)
         values(:comment_id, :updated_at, :body, :rendered_body, :permanent_id, :post_id)';
     $sth = $db->pdo->prepare($comment_sql);
     $kiji_number = count($comment_arr);
+    //人気記事のコメント情報をデータベースに登録する
     for ($j = 0; $j < $kiji_number; ++$j) {
         $comment_number = count($comment_arr[$j]);
-
+　　//一つの記事あたりのコメントの数だけループをまわす
         for ($k = 0; $k < $comment_number - 1; ++$k) {
             $params = [':comment_id' => $comment_arr[$j][$k]['id'],
                 ':updated_at' => $comment_arr[$j][$k]['updated_at'],

@@ -5,7 +5,6 @@
  *  @author SystemSoft Arita-takahiro
  *  @date 2018/05/21 新規作成
  *
- * @param mixed $file
  * @param mixed $feed_atom
  */
 function extract_qiita_feed($feed_atom)
