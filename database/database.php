@@ -181,15 +181,23 @@ class Database
      */
     public function insert_rss_history($api_data)
     {
-        $sql = 'INSERT INTO rss_history(post_id) VALUES(:post_id)
-        ';
-//      $sql = 'INSERT INTO rss_history(post_id) VALUES(:post_id)';
+        $sql = 'SELECT crawl_id FROM crawl_history
+        ORDER BY record_crated_at DESC
+        LIMIT 1';
+
+//        $sql = 'INSERT INTO rss_history(post_id) VALUES(:post_id)
+//        ';
         $sth = $this->pdo->prepare($sql);
+        $sth->execute();
+        $crawl = $sth->fetchAll(PDO::FETCH_ASSOC);
+        $sql2 = 'INSERT INTO rss_history(post_id, crawl_history_id) VALUES(:post_id, :crawl_history_id)';
+        $sth2 = $this->pdo->prepare($sql2);
         for ($i = 0; $i < count($api_data['contents']); ++$i) {
             $params = [':post_id' => $api_data['contents'][$i]['item_id'],
             ];
-            $sth->bindParam(':post_id', $params[':post_id'], PDO::PARAM_STR);
-            $sth->execute();
+            $sth2->bindParam(':post_id', $params[':post_id'], PDO::PARAM_STR);
+            $sth2->bindParam(':crawl_history_id', $crawl[0]['crawl_id'], PDO::PARAM_INT);
+            $sth2->execute();
         }
     }
 
@@ -249,14 +257,7 @@ class Database
      */
     public function insert_crawl_history($rss_data)
     {
-        /*
-        現在の時刻を登録する場合
-        $date = new DateTime();
-        $date = (string) $date->format('Y-m-d H:i:s');
-        */
-        $sql = 'INSERT IGNORE INTO crawl_history(rss_updated) VALUES (:created)';
-//        $sql = 'INSERT INTO crawl_history(rss_updated)
-//        SELECT ':created' from crawl_history ';
+        $sql = 'INSERT INTO crawl_history(rss_updated) VALUES (:created)';
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindParam(':created', $rss_data['updated'], PDO::PARAM_STR);
         $stmt->execute();
@@ -294,5 +295,16 @@ class Database
                 LIMIT 20';
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute();
+    }
+
+    public function get_rss_updated()
+    {
+        $sql = 'SELECT rss_updated FROM crawl_history
+        ORDER BY record_crated_at DESC
+        LIMIT 1';
+        $sth = $this->pdo->prepare($sql);
+        $sth->execute();
+
+        return $sth->fetchAll(PDO::FETCH_ASSOC);
     }
 }

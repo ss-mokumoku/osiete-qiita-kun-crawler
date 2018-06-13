@@ -7,46 +7,57 @@
  */
 date_default_timezone_set('Asia/Tokyo');
 //RSSの情報を抽出して連想配列にするファイル
-require_once 'extract_qiita_feed.php';
+require_once '/var/www/html/php_kiso/xml/Development_training/rss/extract_qiita_feed.php';
 //APIの情報を抽出して連想配列にするファイル
-require 'extract_api.php';
+require '/var/www/html/php_kiso/xml/Development_training/api/extract_api.php';
 //RSSの連想配列とAPIの連想配列を組み合わせる
-require_once 'integrate.php';
+require_once '/var/www/html/php_kiso/xml/Development_training/api/integrate.php';
 //PDOやINSERTなどデータベース関連の関数があるファイル
-require_once 'database.php';
+require_once '/var/www/html/php_kiso/xml/Development_training/database/database.php';
 
 //Qiitaの人気記事を20件RSSから取得します
 $rss_data = extract_qiita_feed('https://qiita.com/popular-items/feed.atom');
-// ↓内部のfeed.atomから人気記事を取得する場合のコード
-//$rss_data = extract_qiita_feed('feed.atom');
+//echo $rss_data['updated'];
 
 $db = new Database();
-$db->insert_crawl_history($rss_data);
+//crawl_historyテーブルからの更新履歴を取得する
+$rss_updated = $db->get_rss_updated();
 
-//RSSのitem_idにAPIの情報を付け加えて、結果を連想配列にして返す
-$api_data = integrate_rss_api($rss_data);
-print_r($api_data);
+//RSSの更新履歴とcrawl_historyテーブルの更新履歴を比較
+//もしすでに、登録したRSSの情報ならば登録しない
+//新しい更新履歴のRSSならば登録する
+if (date('Y年n月j日g時i分s秒', strtotime($rss_data['updated'])) === date('Y年n月j日g時i分s秒', strtotime($rss_updated[0]['rss_updated']))) {
+    echo 'すでに登録済みです。';
+} else {
+    //$db = new Database();
+    $db->insert_crawl_history($rss_data);
 
-//トランザクション
-try {
-    $db->pdo->beginTransaction();
-    //authors_tblにAPIの情報を登録します
-    $db->insert_author($api_data);
-    //articles_tblにAPIの情報を登録します
-    $db->insert_article($api_data);
-    //rss_historyにAPIの情報を登録します
-    $db->insert_rss_history($api_data);
-    //tags_tblにAPIの情報を登録します
-    $res = $db->insert_tags($api_data);
-    //いいね数をデータベースの履歴に登録
-    $db->insert_likescount_history();
-    //閲覧数をデータベースの履歴に登録
-    $db->insert_page_views_count_history();
-    echo 'データベースに登録完了しました。';
-    $db->pdo->commit();
-} catch (PDOException $e) {
-    $db->pdo->rollBack();
-    echo $e->getMessage();
-    die();
+    //RSSのitem_idにAPIの情報を付け加えて、結果を連想配列にして返す
+    $api_data = integrate_rss_api($rss_data);
+
+    //トランザクション
+    try {
+        $db->pdo->beginTransaction();
+        //authors_tblにAPIの情報を登録します
+        $db->insert_author($api_data);
+        //articles_tblにAPIの情報を登録します
+        $db->insert_article($api_data);
+        //rss_historyにAPIの情報を登録します
+        $db->insert_rss_history($api_data);
+        //tags_tblにAPIの情報を登録します
+        $res = $db->insert_tags($api_data);
+        //いいね数をデータベースの履歴に登録
+        $db->insert_likescount_history();
+        //閲覧数をデータベースの履歴に登録
+        $db->insert_page_views_count_history();
+        echo 'データベースに登録完了しました。';
+        $db->pdo->commit();
+    } catch (PDOException $e) {
+        $db->pdo->rollBack();
+        echo $e->getMessage();
+        die();
+    }
+    $db = null;
+
+    echo '登録しました';
 }
-$db = null;
