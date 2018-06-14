@@ -7,8 +7,8 @@
  *
  * @param mixed $rss_data
  */
-require_once '/var/www/html/php_kiso/xml/Development_training/api/extract_api.php';
-require_once '/var/www/html/php_kiso/xml/Development_training/rss/extract_qiita_feed.php';
+require_once 'extract_api.php';
+require_once 'rss/extract_qiita_feed.php';
 
 function integrate_rss_api($rss_data)
 {

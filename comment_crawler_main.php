@@ -7,7 +7,7 @@
  */
 
 //データベースファイルの呼び出し
-require '/var/www/html/php_kiso/xml/Development_training/database/database.php';
+require 'database/database.php';
 //インスタンス作成
 $db = new Database();
 

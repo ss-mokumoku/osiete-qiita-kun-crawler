@@ -7,13 +7,13 @@
  */
 date_default_timezone_set('Asia/Tokyo');
 //RSSの情報を抽出して連想配列にするファイル
-require_once '/var/www/html/php_kiso/xml/Development_training/rss/extract_qiita_feed.php';
+require_once 'rss/extract_qiita_feed.php';
 //APIの情報を抽出して連想配列にするファイル
-require '/var/www/html/php_kiso/xml/Development_training/api/extract_api.php';
+require 'api/extract_api.php';
 //RSSの連想配列とAPIの連想配列を組み合わせる
-require_once '/var/www/html/php_kiso/xml/Development_training/api/integrate.php';
+require_once 'api/integrate.php';
 //PDOやINSERTなどデータベース関連の関数があるファイル
-require_once '/var/www/html/php_kiso/xml/Development_training/database/database.php';
+require_once 'database/database.php';
 
 //Qiitaの人気記事を20件RSSから取得します
 $rss_data = extract_qiita_feed('https://qiita.com/popular-items/feed.atom');
@@ -26,9 +26,9 @@ $rss_updated = $db->get_rss_updated();
 //RSSの更新履歴とcrawl_historyテーブルの更新履歴を比較
 //もしすでに、登録したRSSの情報ならば登録しない
 //新しい更新履歴のRSSならば登録する
-if (date('Y年n月j日g時i分s秒', strtotime($rss_data['updated'])) === date('Y年n月j日g時i分s秒', strtotime($rss_updated[0]['rss_updated']))) {
-    echo 'すでに登録済みです。';
-} else {
+//if (date('Y年n月j日g時i分s秒', strtotime($rss_data['updated'])) === date('Y年n月j日g時i分s秒', strtotime($rss_updated[0]['rss_updated']))) {
+//    echo 'すでに登録済みです。';
+//} else {
     //$db = new Database();
     $db->insert_crawl_history($rss_data);
 
@@ -59,5 +59,5 @@ if (date('Y年n月j日g時i分s秒', strtotime($rss_data['updated'])) === date('
     }
     $db = null;
 
-    echo '登録しました';
-}
+//    echo '登録しました';
+//}
