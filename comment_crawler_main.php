@@ -21,20 +21,23 @@ $comment_arr = [];
 $comment_count = count($res);
 
 //  APIをたたいて、コメントの情報を取得して連想配列で返す
-for ($i = 0; $i < $comment_count; ++$i) {
-    //for ($i = 2; $i < 3; ++$i) { APIを複数回たたかないようにするためのコード
-    $c = curl_init('https://qiita.com/api/v2/items/'.$res[$i]['post_id'].'/comments');
-    //$c = curl_init('http://10.20.30.99/qiita/'.$item.'.json');
-    curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
-    $json = curl_exec($c);
-    //文字化けをしないようにする
-    $json = mb_convert_encoding($json, 'UTF8', 'ASCII,JIS,UTF-8,EUC-JP,SJIS-WIN');
-    //連想配列にする
-    $arr = json_decode($json, true);
-    $arr['post_id'] = $res[$i]['post_id'];
-    $comment_arr[] = $arr;
-}
+//for ($i = 0; $i < $comment_count; ++$i) {
+        //APIを複数回たたかないようにするためのコード
+    for ($i = 50; $i < 70; ++$i) {
+        $c = curl_init('https://qiita.com/api/v2/items/'.$res[$i]['post_id'].'/comments');
+        //$c = curl_init('http://10.20.30.99/qiita/'.$item.'.json');
+        curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
+        $json = curl_exec($c);
+        //文字化けをしないようにする
+        $json = mb_convert_encoding($json, 'UTF8', 'ASCII,JIS,UTF-8,EUC-JP,SJIS-WIN');
+        //連想配列にする
+        $arr = json_decode($json, true);
+        //post_idを配列の中にいれる
+        $arr['post_id'] = $res[$i]['post_id'];
+        $comment_arr[] = $arr;
+    }
 
+print_r($comment_arr);
 //コメントしたユーザーの情報をauthors_tblに格納します
 comment_author($comment_arr);
 //コメントの情報をcomment_tblに格納します
@@ -55,9 +58,10 @@ function comment_insert($comment_arr)
     $sth = $db->pdo->prepare($comment_sql);
     $kiji_number = count($comment_arr);
     //人気記事のコメント情報をデータベースに登録する
+
     for ($j = 0; $j < $kiji_number; ++$j) {
         $comment_number = count($comment_arr[$j]);
-　　//一つの記事あたりのコメントの数だけループをまわす
+        //一つの記事あたりのコメントの数だけループをまわす
         for ($k = 0; $k < $comment_number - 1; ++$k) {
             $params = [':comment_id' => $comment_arr[$j][$k]['id'],
                 ':updated_at' => $comment_arr[$j][$k]['updated_at'],
@@ -66,7 +70,6 @@ function comment_insert($comment_arr)
                 ':permanent_id' => $comment_arr[$j][$k]['user']['permanent_id'],
                 ':post_id' => $comment_arr[$j]['post_id'],
             ];
-
             $sth->bindParam(':comment_id', $params[':comment_id'], PDO::PARAM_STR);
             $sth->bindParam(':updated_at', $params[':updated_at'], PDO::PARAM_STR);
             $sth->bindParam(':body', $params[':body'], PDO::PARAM_STR);
@@ -106,7 +109,7 @@ function comment_author($comment_arr)
         :facebook_id, :twitter_screen_name,
         :website_url
     )';
-
+    //コメントの配列の数を数えている
     $comment_count2 = count($comment_arr);
 
     for ($j = 0; $j < $comment_count2; ++$j) {
