@@ -1,16 +1,24 @@
 <?php
-require_once("qiita_json.php");
-require_once("extract_qiita_feed.php");
+/**	@file
+ *  @brief RSSの情報とAPIの情報をつなぎ合わせて連想配列をつくる
+ *
+ *  @author SystemSoft Arita-takahiro
+ *  @date 2018/05/21 新規作成
+ *
+ * @param mixed $rss_data
+ */
+require_once 'extract_api.php';
+require_once 'rss/extract_qiita_feed.php';
 
-function qiita_json_api($rss_data){
-//配列をうけとってitem_idだけ抜き取る
-
-        $json_count = count($rss_data['contents']);
-        for($i=$json_count-1;$i>=0;$i--){
-
+function integrate_rss_api($rss_data)
+{
+    //RSSの配列をうけとってitem_idだけ抜き取る
+    //その後item_idを利用してAPIの情報（配列）を取得する
+    //RSSの配列とAPIの情報をくっつけて、それを連想配列にしてリターンする
+    for ($i = 0; $i < count($rss_data['contents']); ++$i) {
         $item_id = $rss_data['contents'][$i]['item_id'];
-        $API = qiita_json($item_id);
-         //要素を追加する
+        $API = extract_api($item_id);
+        //RSSの配列にAPIの要素を追加する
         $rss_data['contents'][$i]['permanent_id'] = $API['permanent_id'];
         $rss_data['contents'][$i]['user_id'] = $API['user_id'];
         $rss_data['contents'][$i]['profile_image_url'] = $API['profile_image_url'];
@@ -33,10 +41,10 @@ function qiita_json_api($rss_data){
         $rss_data['contents'][$i]['reactions_count'] = $API['reactions_count'];
         $rss_data['contents'][$i]['coediting'] = $API['coediting'];
         $rss_data['contents'][$i]['tags'] = $API['tags'];
-//  5秒間隔でループを行うことも可能      sleep(5);
+        //  5秒間隔でループを行うことも可能      sleep(5);
     }
 
-return $rss_data;
+    return $rss_data;
 }
 /*
 $API = qiita_json($item_id_count[0]);
@@ -48,4 +56,3 @@ $data['contents']['tags'] = $API['tags'];
 print_r($data);
 }
 */
-?>

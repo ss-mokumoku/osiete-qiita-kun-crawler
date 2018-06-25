@@ -1,9 +1,20 @@
 <?php
 
-function qiita_json($item)
+/**	@file
+ *  @brief Qiitaの人気記事のAPIを取得するコードです
+ *
+ *  @author SystemSoft Arita-takahiro
+ *  @date 2018/05/21 新規作成
+ *
+ * @param mixed $file
+ * @param mixed $item_id
+ */
+function extract_api($item_id)
 {
-    $c = curl_init('https://qiita.com/api/v2/items/'.$item);
+    //item_id
+    $c = curl_init('https://qiita.com/api/v2/items/'.$item_id);
     //$c = curl_init('http://10.20.30.99/qiita/'.$item.'.json');
+//    $c = curl_init('http://10.20.30.169/php_kiso/xml/dummy_qiita_api/'.$item.'.json');
 
     curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
     $json = curl_exec($c);
@@ -13,12 +24,11 @@ function qiita_json($item)
     //連想配列にする
 
     $arr = json_decode($json, true);
-    $json_count = count($arr['tags']);
-    $tags_count = [];
+    $tags = [];
 
-    for ($i = $json_count - 1; $i >= 0; --$i) {
+    for ($i = 0; $i < count($arr['tags']); ++$i) {
         $tag = $arr['tags'][$i]['name'];
-        $tags_count[] = $tag;
+        $tags[] = $tag;
     }
 
     return [
@@ -47,7 +57,7 @@ function qiita_json($item)
         'comments_count' => $arr['comments_count'],
         'reactions_count' => $arr['reactions_count'],
         'coediting' => $arr['coediting'],
-        'tags' => $tags_count,
+        'tags' => $tags,
     ];
 }
 
